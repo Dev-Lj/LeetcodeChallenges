@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+void print_result(int* result, int resultSize);
+
 bool in_array(int* arr, int size_arr, int val) {
     for (int i = 0; i < size_arr; i++)
     {
@@ -14,10 +16,12 @@ bool in_array(int* arr, int size_arr, int val) {
     return false;
 }
 
-void array_add(int* arr, int* size_arr, int val) {
+int* array_add(int* arr, int* size_arr, int val) {
+        int last = *size_arr;
         *size_arr += 1;
-        realloc(arr, *size_arr * sizeof(int));
-        arr[*size_arr-1] = val;
+        int* result = realloc(arr, *size_arr * sizeof(int));
+        result[last] = val;
+        return result;
 }
 
 bool dfs_is_safeNode(int currentNode, int** graph, int graphSize, int* graphColSize, int* branch, int branchSize, int* result, int* returnSize){
@@ -25,7 +29,7 @@ bool dfs_is_safeNode(int currentNode, int** graph, int graphSize, int* graphColS
     {
         if (!in_array(result, *returnSize, currentNode))
         {
-            array_add(result, returnSize, currentNode);
+            result = array_add(result, returnSize, currentNode);
         }
         
         return true;
@@ -43,7 +47,7 @@ bool dfs_is_safeNode(int currentNode, int** graph, int graphSize, int* graphColS
         return false;
     }
 
-    array_add(branch, &branchSize, currentNode);
+    branch[++branchSize] = currentNode;
     
 
 
@@ -67,18 +71,25 @@ int cmpfunc (const void * a, const void * b) {
    return ( *(int*)a - *(int*)b );
 }
 
+void init_branch_arr(int* branch, int graphSize) {
+    for (int i = 0; i < graphSize; i++)
+    {
+        branch[i] = -1;
+    }
+    
+}
+
 /**
  * Note: The returned array must be malloced, assume caller calls free().
  */
 int* eventualSafeNodes(int** graph, int graphSize, int* graphColSize, int* returnSize){
     int* result = malloc(sizeof(int));
-    int* branch;
+    int branch[graphSize];
 
     for (int i = 0; i < graphSize; i++)
     {
-        branch = malloc(sizeof(int));
+        init_branch_arr(branch, graphSize);
         dfs_is_safeNode(i, graph, graphSize, graphColSize, branch, 0, result, returnSize);
-        free(branch);
     }
     
     qsort(result, *returnSize, sizeof(int), cmpfunc);
